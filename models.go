@@ -101,6 +101,7 @@ type Invoice struct {
 	Amount             float64    `json:"amount,omitempty"`
 	Balance            float64    `json:"balance,omitempty"`
 	PaidToDate         float64    `json:"paid_to_date,omitempty"`
+	Discount           float64    `json:"discount,omitempty"`
 	PartialDueDate     string     `json:"partial_due_date,omitempty"`
 	DueDate            string     `json:"due_date,omitempty"`
 	Date               string     `json:"date,omitempty"`
