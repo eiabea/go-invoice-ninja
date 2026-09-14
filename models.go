@@ -189,6 +189,57 @@ type ClientContact struct {
 	CustomValue4 string `json:"custom_value4,omitempty"`
 }
 
+// Expense represents an expense in Invoice Ninja.
+type Expense struct {
+	ID                   string  `json:"id"`
+	UserID               string  `json:"user_id"`
+	AssignedUserID       string  `json:"assigned_user_id"`
+	ProjectID            string  `json:"project_id"`
+	ClientID             string  `json:"client_id"`
+	InvoiceID            string  `json:"invoice_id"`
+	BankID               string  `json:"bank_id"`
+	InvoiceCurrencyID    string  `json:"invoice_currency_id"`
+	CurrencyID           string  `json:"currency_id"`
+	InvoiceCategoryID    string  `json:"invoice_category_id"`
+	PaymentTypeID        string  `json:"payment_type_id"`
+	RecurringExpenseID   string  `json:"recurring_expense_id"`
+	PrivateNotes         string  `json:"private_notes"`
+	PublicNotes          string  `json:"public_notes"`
+	TransactionReference string  `json:"transaction_reference"`
+	TranscationID        string  `json:"transcation_id"`
+	CustomValue1         string  `json:"custom_value1"`
+	CustomValue2         string  `json:"custom_value2"`
+	CustomValue3         string  `json:"custom_value3"`
+	CustomValue4         string  `json:"custom_value4"`
+	TaxAmount            float64 `json:"tax_amount"`
+	TaxName1             string  `json:"tax_name1"`
+	TaxName2             string  `json:"tax_name2"`
+	TaxName3             string  `json:"tax_name3"`
+	TaxRate1             float64 `json:"tax_rate1"`
+	TaxRate2             float64 `json:"tax_rate2"`
+	TaxRate3             float64 `json:"tax_rate3"`
+	Amount               float64 `json:"amount"`
+	ForeignAmount        float64 `json:"foreign_amount"`
+	ExchangeRate         float64 `json:"exchange_rate"`
+	Date                 string  `json:"date"`
+	PaymentDate          string  `json:"payment_date"`
+	ShouldBeInvoiced     bool    `json:"should_be_invoiced"`
+	IsDeleted            bool    `json:"is_deleted"`
+	InvoiceDocuments     bool    `json:"invoice_documents"`
+	UpdatedAt            int     `json:"updated_at"`
+	ArchivedAt           int     `json:"archived_at"`
+	CalculateTaxByAmount bool    `json:"calculate_tax_by_amount"`
+	CategoryID           string  `json:"category_id"`
+	Number               string  `json:"number"`
+	PurchaseOrderID      string  `json:"purchase_order_id"`
+	TaxAmount1           float64 `json:"tax_amount1"`
+	TaxAmount2           float64 `json:"tax_amount2"`
+	TaxAmount3           float64 `json:"tax_amount3"`
+	TransactionID        string  `json:"transaction_id"`
+	UsesInclusiveTaxes   bool    `json:"uses_inclusive_taxes"`
+	VendorID             string  `json:"vendor_id"`
+}
+
 // Meta represents pagination metadata.
 type Meta struct {
 	Pagination Pagination `json:"pagination,omitempty"`
