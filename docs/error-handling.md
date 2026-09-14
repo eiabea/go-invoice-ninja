@@ -13,6 +13,7 @@ type APIError struct {
     StatusCode int                 // HTTP status code
     Message    string              // Error message
     Errors     map[string][]string // Field-specific validation errors
+    Headers    http.Header         // HTTP response headers, such as Retry-After
 }
 ```
 
@@ -21,7 +22,7 @@ type APIError struct {
 ```go
 payments, err := client.Payments.List(ctx, nil)
 if err != nil {
-    if apiErr, ok := err.(*invoiceninja.APIError); ok {
+    if apiErr, ok := invoiceninja.IsAPIError(err); ok {
         // Handle API-specific error
         fmt.Printf("Status: %d, Message: %s\n", apiErr.StatusCode, apiErr.Message)
     } else {
@@ -36,7 +37,7 @@ if err != nil {
 The `APIError` type provides helper methods for common error types:
 
 ```go
-if apiErr, ok := err.(*invoiceninja.APIError); ok {
+if apiErr, ok := invoiceninja.IsAPIError(err); ok {
     switch {
     case apiErr.IsNotFound():
         // 404 - Resource not found
@@ -77,7 +78,7 @@ payment, err := client.Payments.Create(ctx, &invoiceninja.PaymentRequest{
     Amount: -100, // Invalid!
 })
 if err != nil {
-    if apiErr, ok := err.(*invoiceninja.APIError); ok && apiErr.IsValidationError() {
+    if apiErr, ok := invoiceninja.IsAPIError(err); ok && apiErr.IsValidationError() {
         for field, errors := range apiErr.Errors {
             for _, e := range errors {
                 fmt.Printf("Validation error on %s: %s\n", field, e)
@@ -89,7 +90,7 @@ if err != nil {
 
 ## Retry Configuration
 
-The SDK includes automatic retry for transient errors:
+The SDK can retry failed requests automatically. Retries are off by default: enable them with `WithRetryConfig`, or use `NewRateLimitedClient`, which uses `DefaultRetryConfig()`:
 
 ```go
 retryConfig := &invoiceninja.RetryConfig{
@@ -105,30 +106,38 @@ client := invoiceninja.NewClient("token",
     invoiceninja.WithRetryConfig(retryConfig))
 ```
 
+Retries apply to every service method and generic request made by that client.
+
 ### Default Retry Behavior
 
-By default, the SDK retries on:
+With `DefaultRetryConfig()`, a request is retried up to 3 times after:
+- **Network errors** - The request could not be sent or the response could not be read
 - **429** - Rate limit exceeded
 - **500** - Internal server error
 - **502** - Bad gateway
 - **503** - Service unavailable
 - **504** - Gateway timeout
 
-With exponential backoff: 1s → 2s → 4s (with jitter)
+With exponential backoff: 1s → 2s → 4s (plus up to 30% jitter), capped at `MaxBackoff`.
+
+For 429 responses with a `Retry-After` header, the client waits as long as the header asks. If that is longer than `MaxBackoff`, the error is returned instead of retrying.
+
+`POST` and `PATCH` requests, such as creating a payment or emailing an invoice, are only retried after a 429 response. After a network or server error the server may already have processed them, so retrying could create duplicates. Set `RetryNonIdempotent: true` if retrying them is safe for you.
 
 ## Rate Limiting
 
 ### Server-Side Rate Limits
 
-Invoice Ninja enforces rate limits. When exceeded, you'll receive a 429 error:
+Invoice Ninja enforces rate limits. When exceeded, you'll receive a 429 error. With retries enabled the SDK already waits for the `Retry-After` header; without them you can read it from the error:
 
 ```go
-if apiErr.IsRateLimited() {
-    // Check for Retry-After header
+if apiErr, ok := invoiceninja.IsAPIError(err); ok && apiErr.IsRateLimited() {
+    // Retry-After is either a number of seconds or an HTTP date
     retryAfter := apiErr.Headers.Get("Retry-After")
-    if retryAfter != "" {
-        duration, _ := strconv.Atoi(retryAfter)
-        time.Sleep(time.Duration(duration) * time.Second)
+    if seconds, err := strconv.Atoi(retryAfter); err == nil {
+        time.Sleep(time.Duration(seconds) * time.Second)
+    } else if date, err := http.ParseTime(retryAfter); err == nil {
+        time.Sleep(time.Until(date))
     }
 }
 ```
@@ -192,7 +201,7 @@ if err != nil {
 ### 3. Log Contextual Information
 
 ```go
-if apiErr, ok := err.(*invoiceninja.APIError); ok {
+if apiErr, ok := invoiceninja.IsAPIError(err); ok {
     log.Printf("API error: status=%d message=%s endpoint=%s",
         apiErr.StatusCode,
         apiErr.Message,
