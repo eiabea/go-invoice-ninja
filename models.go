@@ -206,7 +206,6 @@ type Expense struct {
 	PrivateNotes         string  `json:"private_notes,omitempty"`
 	PublicNotes          string  `json:"public_notes,omitempty"`
 	TransactionReference string  `json:"transaction_reference,omitempty"`
-	TranscationID        string  `json:"transcation_id,omitempty"`
 	CustomValue1         string  `json:"custom_value1,omitempty"`
 	CustomValue2         string  `json:"custom_value2,omitempty"`
 	CustomValue3         string  `json:"custom_value3,omitempty"`
@@ -226,8 +225,8 @@ type Expense struct {
 	ShouldBeInvoiced     bool    `json:"should_be_invoiced,omitempty"`
 	IsDeleted            bool    `json:"is_deleted,omitempty"`
 	InvoiceDocuments     bool    `json:"invoice_documents,omitempty"`
-	UpdatedAt            int     `json:"updated_at,omitempty"`
-	ArchivedAt           int     `json:"archived_at,omitempty"`
+	UpdatedAt            int64   `json:"updated_at,omitempty"`
+	ArchivedAt           int64   `json:"archived_at,omitempty"`
 	CalculateTaxByAmount bool    `json:"calculate_tax_by_amount,omitempty"`
 	CategoryID           string  `json:"category_id,omitempty"`
 	Number               string  `json:"number,omitempty"`
@@ -235,7 +234,7 @@ type Expense struct {
 	TaxAmount1           float64 `json:"tax_amount1,omitempty"`
 	TaxAmount2           float64 `json:"tax_amount2,omitempty"`
 	TaxAmount3           float64 `json:"tax_amount3,omitempty"`
-	TransactionID        string  `json:"transaction_id,omitempty"`
+	TransactionID        string  `json:"transcation_id,omitempty"`
 	UsesInclusiveTaxes   bool    `json:"uses_inclusive_taxes,omitempty"`
 	VendorID             string  `json:"vendor_id,omitempty"`
 }
