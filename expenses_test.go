@@ -212,46 +212,6 @@ func TestExpensesServiceDelete(t *testing.T) {
 	}
 }
 
-func TestExpensesServiceBulk(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != "POST" {
-			t.Errorf("expected POST method, got %s", r.Method)
-		}
-		if r.URL.Path != "/api/v1/expenses/bulk" {
-			t.Errorf("expected path /api/v1/expenses/bulk, got %s", r.URL.Path)
-		}
-
-		var body BulkAction
-		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-			t.Errorf("failed to decode request body: %v", err)
-		}
-
-		if body.Action != "archive" {
-			t.Errorf("expected action to be 'archive', got '%s'", body.Action)
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"data": []map[string]interface{}{
-				{"id": "abc123"},
-				{"id": "def456"},
-			},
-		})
-	}))
-	defer server.Close()
-
-	client := NewClient("test-token", WithBaseURL(server.URL))
-
-	expenses, err := client.Expenses.Bulk(context.Background(), "archive", []string{"abc123", "def456"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	if len(expenses) != 2 {
-		t.Errorf("expected 2 expenses, got %d", len(expenses))
-	}
-}
-
 func TestExpenseListOptionsToQuery(t *testing.T) {
 	isDeleted := true
 	opts := &ExpenseListOptions{
@@ -259,7 +219,7 @@ func TestExpenseListOptionsToQuery(t *testing.T) {
 		Page:      2,
 		Filter:    "test",
 		ClientID:  "client123",
-		Status:    "active,archived",
+		Status:    "active",
 		CreatedAt: "2024-01-01",
 		UpdatedAt: "2024-01-15",
 		IsDeleted: &isDeleted,

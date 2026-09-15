@@ -26,7 +26,7 @@ type ExpenseListOptions struct {
 	// ClientID filters by client.
 	ClientID string
 
-	// Status filters by status (comma-separated: active, archived, deleted).
+	// Status filters by status (comma-separated: active, deleted).
 	Status string
 
 	// CreatedAt filters by creation date.
@@ -128,57 +128,6 @@ func (s *ExpensesService) Delete(ctx context.Context, id string) error {
 	return s.client.doRequest(ctx, "DELETE", fmt.Sprintf("/api/v1/expenses/%s", id), nil, nil, nil)
 }
 
-// Archive archives an expense.
-func (s *ExpensesService) Archive(ctx context.Context, id string) (*Expense, error) {
-	return s.bulkAction(ctx, "archive", id)
-}
-
-// Restore restores an archived expense.
-func (s *ExpensesService) Restore(ctx context.Context, id string) (*Expense, error) {
-	return s.bulkAction(ctx, "restore", id)
-}
-
-// MarkPaid marks an expense as paid.
-func (s *ExpensesService) MarkPaid(ctx context.Context, id string) (*Expense, error) {
-	return s.bulkAction(ctx, "mark_paid", id)
-}
-
-// MarkSent marks an expense as sent.
-func (s *ExpensesService) MarkSent(ctx context.Context, id string) (*Expense, error) {
-	return s.bulkAction(ctx, "mark_sent", id)
-}
-
-// Email sends an expense via email.
-func (s *ExpensesService) Email(ctx context.Context, id string) (*Expense, error) {
-	return s.bulkAction(ctx, "email", id)
-}
-
-// Bulk performs a bulk action on multiple expenses.
-func (s *ExpensesService) Bulk(ctx context.Context, action string, ids []string) ([]Expense, error) {
-	req := BulkAction{
-		Action: action,
-		IDs:    ids,
-	}
-
-	var resp ListResponse[Expense]
-	if err := s.client.doRequest(ctx, "POST", "/api/v1/expenses/bulk", nil, req, &resp); err != nil {
-		return nil, err
-	}
-	return resp.Data, nil
-}
-
-// bulkAction performs a single-item bulk action.
-func (s *ExpensesService) bulkAction(ctx context.Context, action, id string) (*Expense, error) {
-	expenses, err := s.Bulk(ctx, action, []string{id})
-	if err != nil {
-		return nil, err
-	}
-	if len(expenses) == 0 {
-		return nil, fmt.Errorf("no expense returned from bulk action")
-	}
-	return &expenses[0], nil
-}
-
 // GetBlank retrieves a blank expense object with default values.
 func (s *ExpensesService) GetBlank(ctx context.Context) (*Expense, error) {
 	var resp SingleResponse[Expense]
@@ -186,11 +135,4 @@ func (s *ExpensesService) GetBlank(ctx context.Context) (*Expense, error) {
 		return nil, err
 	}
 	return &resp.Data, nil
-}
-
-// Download downloads an expense PDF.
-func (s *ExpensesService) Download(ctx context.Context, invitationKey string) ([]byte, error) {
-	// This would need special handling for binary response
-	// For now, we'll return the raw bytes
-	return nil, fmt.Errorf("not implemented - use client.Request with custom handling")
 }
